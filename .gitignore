@@ -1,3 +1,6 @@
+# Will not save the weightloss.csv. That way if you don't want to show others your progress. Can keep it to yourself. 
+weightloss.csv
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

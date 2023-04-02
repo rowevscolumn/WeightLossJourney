@@ -26,7 +26,7 @@ class WeightLoss:
         Returns the DataFrame in string format to view.
         """
         return self.df.to_string()
-    
+
     def printdf(self) -> pd.DataFrame:
         """
         Returns the dataframe so you can use Dataframe functions
@@ -42,21 +42,26 @@ class WeightLoss:
         Opens the csv file into a dataframe. Checks first to see if the file name exists first.
         """
         if os.path.isfile(self.csvfile):
-            self.df = pd.read_csv(self.csvfile)
-            self.df = self.df.set_index(['date'])
+            self.df = pd.read_csv(self.csvfile, dtype={'date': 'str', 'weight': 'float'})
+            self.df['date-date'] = pd.to_datetime(self.df['date']).dt.strftime('%Y-%m-%d')
+            self.df = self.df.set_index(['date-date'])
+            self.df.index = pd.to_datetime(self.df.index)
+
         else:
             print("File name missing, will leave blank DataFrame as is.")
-        return True   
-    
+        return True
+
     def addnewweight(self, newweight: float)-> bool:
         """
-        Will take the new weight number, and add a new record to the csv file. 
+        Will take the new weight number, and add a new record to the csv file.
 
         Args:
             newweight (float): Your new weight
         """
         newdate = datetime.now().astimezone(timezone(self.timezone)).isoformat()
-        self.df.loc[newdate] = [newweight]
+        newdateindex = datetime.fromisoformat(newdate).strftime('%Y-%m-%d')
+        self.df.loc[newdateindex] = {'date': newdate, 'weight': newweight}
+        self.df.index = pd.to_datetime(self.df.index)
         return True
     pass # End Class Weightloss
 
@@ -64,9 +69,9 @@ class WeightLoss:
         """
         Saves the dataframe into a csv file
         """
-        self.df.to_csv(self.csvfile)
+        self.df.to_csv(self.csvfile, index=False)
         return True
-    
+
     def lastknownweight(self)-> float:
         """
         Returns the last known weight, so that it's the default number shown in the text field in the notebook.
@@ -78,7 +83,7 @@ class WeightLoss:
         if self.df.shape[0] <= 0:
             return 0
         return self.df.at[self.df.index.max(), 'weight']
-    
+
     def updateTimeZone(self, newtimezone:str) -> bool:
         """
         Description of updateTimeZone
